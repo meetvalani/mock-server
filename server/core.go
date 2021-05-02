@@ -187,7 +187,7 @@ func update(w http.ResponseWriter, req *http.Request) {
 	where id=?`
 	headers, err := json.Marshal(obj.HTTPHeaders)
 	if err != nil {
-		fmt.Fprintf(w, "Some error in headers unmarshling: "+err.Error())
+		fmt.Fprintf(w, "Some error in headers marshling: "+err.Error())
 		return
 	}
 	_, err = database.Execute(

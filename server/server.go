@@ -1,9 +1,11 @@
 package mockserver
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	localDatabase "mockserver/database"
 
@@ -14,12 +16,65 @@ var database *localDatabase.Database
 
 func welcomePage(w http.ResponseWriter, req *http.Request) {
 	// TODO: return graphical UI.
-	// TODO: include data from database.
 	fmt.Fprintf(w, "This is under progress.\n")
 }
+
 func getResponseFromDB(w http.ResponseWriter, req *http.Request) {
-	// TODO: parse db data and generate response.
-	fmt.Fprintf(w, "This is under progress2.\n")
+	params := mux.Vars(req)
+	path := params["path"]
+
+	query := `select method, responseCode, httpResponseContentType, httpHeaders, httpResponseBody
+	from mock where endpoint=(?)`
+	statement, err := database.PreparedStatement(query)
+	if err != nil {
+		log.Println("Error in prepare statement: ", err.Error())
+		fmt.Fprintf(w, err.Error())
+		return
+	}
+	results, err := statement.Query(path)
+	if err != nil {
+		log.Println("Error in select query: ", err.Error())
+		fmt.Fprintf(w, err.Error())
+		return
+	}
+	empty := true
+	var responseCode int
+	var method, httpResponseContentType, httpHeaders, httpResponseBody string
+	for results.Next() {
+		empty = false
+		results.Scan(&method, &responseCode, &httpResponseContentType, &httpHeaders, &httpResponseBody)
+		break
+	}
+	results.Close()
+	statement.Close()
+
+	if empty {
+		w.WriteHeader(404)
+		fmt.Fprintf(w, "404 page not founddd\n")
+		return
+	}
+
+	if req.Method != strings.ToUpper(method) {
+		w.WriteHeader(405)
+		return
+	}
+
+	headers := make(map[string]string)
+	err = json.Unmarshal([]byte(httpHeaders), &headers)
+	if err != nil {
+		log.Println("Error in returning headers: ", err)
+		fmt.Fprintf(w, err.Error())
+		return
+	}
+
+	w.Header().Set("Content-Type", httpResponseContentType)
+
+	for key, value := range headers {
+		w.Header().Set(key, value)
+	}
+	fmt.Println(w.Header())
+	w.WriteHeader(responseCode)
+	fmt.Fprintf(w, httpResponseBody)
 }
 
 // StartServer is main entry point.
