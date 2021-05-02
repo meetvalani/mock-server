@@ -82,3 +82,17 @@ func GetDatabase(name, path, schema string) *Database {
 	db.init()
 	return db
 }
+
+func (db *Database) PreparedStatement(query string) (*sql.Stmt, error) {
+	database, err := sql.Open("sqlite3", db.path)
+	if err != nil {
+		db.setError(err)
+		return nil, err
+	}
+	statement, err := database.Prepare(query)
+	if err != nil {
+		db.setError(err)
+		return nil, err
+	}
+	return statement, nil
+}
