@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
+	logger "mockserver/logger"
 	"net/http"
 	"strconv"
 
@@ -45,7 +45,7 @@ func commonReqParser(w http.ResponseWriter, req *http.Request) (*httpResponse, e
 	obj := &httpResponse{}
 	err := obj.getFromRequest(req)
 	if err != nil {
-		log.Println(err.Error())
+		logger.Error(err.Error())
 		fmt.Fprintf(w, err.Error())
 		return obj, err
 	}
@@ -120,7 +120,7 @@ func get(w http.ResponseWriter, req *http.Request) {
 	}
 	returnResponse, err := json.Marshal(objs)
 	if err != nil {
-		log.Println(err.Error())
+		logger.Error(err.Error())
 		fmt.Fprintf(w, err.Error())
 	}
 
@@ -213,7 +213,7 @@ func delete(w http.ResponseWriter, req *http.Request) {
 	ids := params["id"]
 	id, err := strconv.Atoi(ids)
 	if err != nil {
-		log.Println(err.Error())
+		logger.Error(err.Error())
 		fmt.Fprintf(w, err.Error())
 		return
 	}
@@ -221,7 +221,7 @@ func delete(w http.ResponseWriter, req *http.Request) {
 	query := "DELETE FROM mock WHERE id=(?)"
 	_, err = database.Execute(query, id)
 	if err != nil {
-		log.Println(err.Error())
+		logger.Error(err.Error())
 		fmt.Fprintf(w, err.Error())
 		return
 	}
