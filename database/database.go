@@ -2,7 +2,8 @@ package mockserver
 
 import (
 	"database/sql"
-	"log"
+
+	logger "mockserver/logger"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -17,6 +18,7 @@ type Database struct {
 func (db *Database) init() {
 	database, err := sql.Open("sqlite3", db.path)
 	if err != nil {
+		logger.Error(err.Error())
 		db.setError(err)
 		return
 	}
@@ -34,8 +36,8 @@ func (db *Database) init() {
 
 func (db *Database) setError(err error) {
 	if err != nil {
+		logger.Error("Got error in db: %s", db.err)
 		db.err = err.Error()
-		log.Printf("Got error in db: %s", db.err)
 	}
 }
 

@@ -3,11 +3,11 @@ package mockserver
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
 	localDatabase "mockserver/database"
+	logger "mockserver/logger"
 
 	"github.com/gorilla/mux"
 )
@@ -27,13 +27,13 @@ func getResponseFromDB(w http.ResponseWriter, req *http.Request) {
 	from mock where endpoint=(?)`
 	statement, err := database.PreparedStatement(query)
 	if err != nil {
-		log.Println("Error in prepare statement: ", err.Error())
+		logger.Error("Error in prepare statement: ", err.Error())
 		fmt.Fprintf(w, err.Error())
 		return
 	}
 	results, err := statement.Query(path)
 	if err != nil {
-		log.Println("Error in select query: ", err.Error())
+		logger.Error("Error in select query: ", err.Error())
 		fmt.Fprintf(w, err.Error())
 		return
 	}
@@ -62,7 +62,7 @@ func getResponseFromDB(w http.ResponseWriter, req *http.Request) {
 	headers := make(map[string]string)
 	err = json.Unmarshal([]byte(httpHeaders), &headers)
 	if err != nil {
-		log.Println("Error in returning headers: ", err)
+		logger.Error("Error in returning headers: ", err)
 		fmt.Fprintf(w, err.Error())
 		return
 	}
@@ -72,7 +72,6 @@ func getResponseFromDB(w http.ResponseWriter, req *http.Request) {
 	for key, value := range headers {
 		w.Header().Set(key, value)
 	}
-	fmt.Println(w.Header())
 	w.WriteHeader(responseCode)
 	fmt.Fprintf(w, httpResponseBody)
 }
@@ -93,6 +92,6 @@ func StartServer(address string, db *localDatabase.Database) {
 		Handler: r,
 		Addr:    address,
 	}
-	log.Printf("Starting server at: '%s'", address)
+	logger.Info("Starting server at: '%s'", address)
 	srv.ListenAndServe()
 }
