@@ -226,5 +226,5 @@ func delete(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(w, "deleted successfully if present.")
+	fmt.Fprintf(w, `{"message": "deleted successfully if present."}`)
 }
