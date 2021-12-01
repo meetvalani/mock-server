@@ -18,7 +18,7 @@ type Database struct {
 func (db *Database) init() {
 	database, err := sql.Open("sqlite3", db.path)
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error.Printf(err.Error())
 		db.setError(err)
 		return
 	}
@@ -36,7 +36,7 @@ func (db *Database) init() {
 
 func (db *Database) setError(err error) {
 	if err != nil {
-		logger.Error("Got error in db: %s", db.err)
+		logger.Error.Printf("Got error in db: %s", db.err)
 		db.err = err.Error()
 	}
 }
